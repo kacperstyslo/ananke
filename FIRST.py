@@ -6,7 +6,6 @@ import socket
 import getopt
 import threading
 import subprocess
-import pdb
 
 
 class First:
@@ -14,12 +13,13 @@ class First:
         self.listen: bool = False
         self.command: bool = False
         self.upload: bool = False
-        self.execute: str = ""
+        self.execute: bytes = b''
         self.target: str = ""
         self.upload_destination: str = ""
         self.port: int = 0
 
-    def run_command(self, command: bytes):
+    @staticmethod
+    def run_command(command: bytes):
         command = command.decode('utf8').rstrip()
 
         try:
@@ -32,38 +32,29 @@ class First:
     def client_handler(self, client_socket):
         print('Polaczenie', self, client_socket, file=sys.stderr)
         if len(self.upload_destination):
-
-            file_buffer = ""
-
+            file_buffer = b''
             while True:
                 data = client_socket.recv(1024)
-
                 if not data:
                     break
                 else:
                     file_buffer += data
-
             try:
                 file_descriptor = open(self.upload_destination, "wb")
                 file_descriptor.write(file_buffer)
                 file_descriptor.close()
-
                 client_socket.send(("Zapisano plik w %s\r\n" % (self.upload_destination,)).encode('utf8'))
             except:
                 client_socket.send(("Nie udalo się zapisac pliku w %s\r\n" % (self.upload_destination,)).encode('utf8'))
 
         if len(self.execute):
             output = self.run_command(self.execute)
-
             client_socket.send(output.encode('utf8'))
 
         if self.command:
-
             while True:
-
                 client_socket.send(b"<FIRST:#> ")
-
-                cmd_buffer = b""
+                cmd_buffer = b''
                 while b"\n" not in cmd_buffer:
                     cmd_buffer += client_socket.recv(1024)
 
@@ -79,7 +70,6 @@ class First:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind((self.target, self.port))
-
         server.listen(5)
 
         while True:
@@ -90,34 +80,25 @@ class First:
 
     def client_sender(self, buffer: str):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
         try:
             client.connect((self.target, self.port))
             print("Connect to:", self.target, "\n" + "On port:", self.port)
             if len(buffer):
                 client.send(buffer.encode('utf8'))
-
             while True:
-
                 recv_len = 1
-                response = b""
-
+                response = b''
                 while recv_len:
                     data = client.recv(4096)
                     recv_len = len(data)
                     response += data
-
                     if recv_len < 4096:
                         break
-
-                print(response.decode('utf8')),
-
+                print(response.decode('utf8'))
                 buffer = input("")
                 buffer += "\n"
 
                 client.send(buffer.encode('utf8'))
-
-
         except:
             print("\n" + "Lost Connection!", "\n" + "Error: Wyjatek[*]")
             client.close()
@@ -125,13 +106,11 @@ class First:
     def main(self):
         if not len(sys.argv[1:]):
             self.usage()
-
         try:
             opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu:",
                                        ["help", "listen", "execute", "target", "port", "command", "upload"])
         except getopt.GetoptError as err:
             self.usage()
-
         for o, a in opts:
             if o in ("-h", "--help"):
                 self.usage()
@@ -158,7 +137,8 @@ class First:
         if self.listen:
             self.server_loop()
 
-    def usage(self):
+    @staticmethod
+    def usage():
         print("""
     Sposob uzycia: FIRST.py -t target_host -p port
     -l --listen                - nasluchuje na [host]:[port] przychodzacych polaczen
@@ -181,7 +161,6 @@ class First:
     python FIRST.py -l -p 1234 -c
     Nawiazywanie polaczenia z nasluchujacym komputerem:
     python FIRST.py -t 192.168.0.1 -p 1234 
-
     """)
         sys.exit(0)
 
