@@ -8,7 +8,7 @@ import threading
 import subprocess
 
 
-class First:
+class Ananke:
     def __init__(self):
         self.listen: bool = False
         self.command: bool = False
@@ -53,7 +53,7 @@ class First:
 
         if self.command:
             while True:
-                client_socket.send(b"<FIRST:#> ")
+                client_socket.send(b"<ANANKE:#> ")
                 cmd_buffer = b''
                 while b"\n" not in cmd_buffer:
                     cmd_buffer += client_socket.recv(1024)
@@ -75,7 +75,7 @@ class First:
         while True:
             client_socket, addr = server.accept()
             print('Accepting %s from %s' % (client_socket, addr))
-            client_thread = threading.Thread(target=First.client_handler, args=(self, client_socket,))
+            client_thread = threading.Thread(target=Ananke.client_handler, args=(self, client_socket,))
             client_thread.start()
 
     def client_sender(self, buffer: str):
@@ -140,30 +140,30 @@ class First:
     @staticmethod
     def usage():
         print("""
-    Sposob uzycia: FIRST.py -t target_host -p port
+    Sposob uzycia: ananke.py -t target_host -p port
     -l --listen                - nasluchuje na [host]:[port] przychodzacych polaczen
     -e --execute=file_to_run   - wykonuje dany plik, gdy zostanie nawiązanie połaczenie
     -c --command               - inicjuje wiersz polecen
     -u --upload=destination    - po nawiazaniu polaczenia wysyła plik i zapisuje go w [destination]
     -t -target                  - adres ip
     Przyklady: 
-    first.py -t 192.168.0.1 -p 5555 -l -c
-    first.py -t 192.168.0.1 -p 5555 -l -u=c:\\target.exe
-    first.py -t 192.168.0.1 -p 5555 -l -e=\"cat /etc/passwd\
-    echo 'ABCDEFGHI' | ./first.py -t 192.168.11.12 -p 135
+    ananke.py -t 192.168.0.1 -p 5555 -l -c
+    ananke.py -t 192.168.0.1 -p 5555 -l -u=c:\\target.exe
+    ananke.py -t 192.168.0.1 -p 5555 -l -e=\"cat /etc/passwd\
+    echo 'ABCDEFGHI' | ./ananke.py -t 192.168.11.12 -p 135
     Rozpoczecie nasluchiwania:
-    python3 FIRST.py -l -p 1234 -c
+    python3 ananke.py -l -p 1234 -c
     Nawiazywanie polaczenia z nasluchujacym komputerem:
-    python3 FIRST.py -t 192.168.0.1 -p 1234 
+    python3 ananke.py -t 192.168.0.1 -p 1234 
 
     Ewentualnie:
     Rozpoczecie nasluchiwania:
-    python FIRST.py -l -p 1234 -c
+    python ananke.py -l -p 1234 -c
     Nawiazywanie polaczenia z nasluchujacym komputerem:
-    python FIRST.py -t 192.168.0.1 -p 1234 
+    python ananke.py -t 192.168.0.1 -p 1234 
     """)
         sys.exit(0)
 
 
 if __name__ == '__main__':
-    First().main()
+    Ananke().main()
